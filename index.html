@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>-</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+        }
+
+        li {
+            list-style-type: none;
+            border: 1px solid #ccc;
+            margin: 5px;
+            padding: 5px;
+            color: #555;
+            border-radius: 5px;
+        }
+
+        .selected {
+            background-color: #849f82;
+            color: white;
+        }
+
+        .trigger {
+            background-color: #80c7a3 !important;
+        }
+    </style>
+</head>
+<body>
+<div id="app" @keydown.down="updateSelection(1)">
+    <ul>
+        <li :class="{'selected': selected === x, 'trigger': selected === x && trigger}" v-for="(action , x) in actions"
+            :key="action.name">{{action.name}}
+        </li>
+    </ul>
+</div>
+<script>
+    var app = new Vue({
+        el: "#app",
+        created() {
+            fetch(
+                "/actions"
+            ).then(
+                response => response.json()
+            ).then(data => this.actions = data);
+            const self = this
+            document.addEventListener('keydown', e => {
+
+                if (e.code === 'ArrowDown') {
+                    this.updateSelection(1)
+                }
+                if (e.code === 'ArrowUp') {
+                    this.updateSelection(-1)
+                }
+                if (e.code === 'Enter') {
+                    this.action(this.actions[this.selected].name)
+                }
+                if (e.code === 'Escape') {
+                    this.action('quit')
+                }
+            })
+        },
+        data: {
+            selected: 0,
+            jobs: undefined,
+            trigger: false,
+            actions: []
+        },
+        computed: {},
+        methods: {
+            action(action) {
+                this.trigger = true
+                setTimeout(() => {
+                    this.trigger = false
+                }, 750)
+                fetch(
+                    "/task?action=" + action
+                ).then(
+                    response => response.json()
+                ).then(data => this.jobs = data);
+
+            },
+            updateSelection(value) {
+                this.selected += value
+                if (this.selected > this.actions.length - 1) {
+                    this.selected = 0
+                }
+                if (this.selected < 0) {
+                    this.selected = this.actions.length - 1
+                }
+            }
+        },
+    });
+</script>
+</body>
+</html>

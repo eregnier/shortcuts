@@ -1,0 +1,14 @@
+[
+  {
+    "name": "notification",
+    "command": "notify-send \"coucou-le-monde\""
+  },
+  {
+    "name": "xeyes",
+    "command": "xeyes"
+  },
+  {
+    "name": "list directory",
+    "command": "notify-send \"$(ls -lha)\""
+  }
+]
