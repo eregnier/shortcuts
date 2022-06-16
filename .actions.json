@@ -1,14 +1,27 @@
 [
   {
     "name": "notification",
-    "command": "notify-send \"coucou-le-monde\""
+    "command": "notify"
   },
   {
     "name": "xeyes",
-    "command": "xeyes"
+    "command": "eyes"
   },
   {
-    "name": "list directory",
-    "command": "notify-send \"$(ls -lha)\""
+    "name": "hi",
+    "command": "plop"
+  },
+  {
+    "name": "sub",
+    "commands": [
+      {
+        "name": "sub hi",
+        "command": "plop"
+      },
+      {
+        "name": "sub notification",
+        "command": "notify"
+      }
+    ]
   }
 ]

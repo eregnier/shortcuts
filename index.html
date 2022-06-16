@@ -8,40 +8,43 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
     <style>
         * {
-            margin: 0;
-            padding: 0;
             font-family: sans-serif;
         }
 
-        li {
-            list-style-type: none;
-            border: 1px solid #ccc;
-            margin: 5px;
-            padding: 5px;
-            color: #555;
-            border-radius: 5px;
+        body, html {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #333;
         }
 
-        .selected {
-            background-color: #849f82;
-            color: white;
+        .action {
+            border: 10px solid #4393BA;
+            margin: 2.5% 0 0 2.5%;
+            width: 15.25%;
+            float: left;
+            color: #777;
+            background-color: #eee;
+            text-align: center;
+            font-size: 1.2em;
+            padding-top: 5.3%;
+            padding-bottom: 5.4%;
         }
 
-        .trigger {
-            background-color: #80c7a3 !important;
+        body {
+            box-shadow: inset 0 0 15px black;
         }
     </style>
 </head>
 <body>
-<div id="app" @keydown.down="updateSelection(1)">
-    <ul>
-        <li :class="{'selected': selected === x, 'trigger': selected === x && trigger}" v-for="(action , x) in actions"
-            :key="action.name">{{action.name}}
-        </li>
-    </ul>
+<div id="app">
+    <div class="action" @click="trigger(action, x)" v-for="(action , x) in currentActions" :key="x">{{action.name}}
+    </div>
+    <!--    <pre style="color:white; clear:both">{{actions}}</pre>-->
 </div>
 <script>
-    var app = new Vue({
+    new Vue({
         el: "#app",
         created() {
             fetch(
@@ -49,52 +52,54 @@
             ).then(
                 response => response.json()
             ).then(data => this.actions = data);
-            const self = this
             document.addEventListener('keydown', e => {
-
-                if (e.code === 'ArrowDown') {
-                    this.updateSelection(1)
-                }
-                if (e.code === 'ArrowUp') {
-                    this.updateSelection(-1)
-                }
-                if (e.code === 'Enter') {
-                    this.action(this.actions[this.selected].name)
-                }
                 if (e.code === 'Escape') {
-                    this.action('quit')
+                    this.trigger('quit')
                 }
             })
         },
         data: {
-            selected: 0,
-            jobs: undefined,
-            trigger: false,
-            actions: []
+            actions: [],
+            selectedAction: undefined
         },
-        computed: {},
-        methods: {
-            action(action) {
-                this.trigger = true
-                setTimeout(() => {
-                    this.trigger = false
-                }, 750)
-                fetch(
-                    "/task?action=" + action
-                ).then(
-                    response => response.json()
-                ).then(data => this.jobs = data);
-
-            },
-            updateSelection(value) {
-                this.selected += value
-                if (this.selected > this.actions.length - 1) {
-                    this.selected = 0
+        computed: {
+            currentActions() {
+                const actions = this.selectedAction === undefined ? this.actions : this.actions[this.selectedAction].commands
+                const currentActions = []
+                for (let x = 0; x < 20; x++) {
+                    if (x < actions.length) {
+                        currentActions.push(actions[x])
+                    } else {
+                        currentActions.push({
+                            name: '-'
+                        })
+                    }
                 }
-                if (this.selected < 0) {
-                    this.selected = this.actions.length - 1
+                if (this.selectedAction !== undefined) {
+                    currentActions[19] = {
+                        name: 'back'
+                    }
                 }
+                return currentActions
             }
+        },
+        methods: {
+            trigger(action, position) {
+                console.log('on trigger action', position)
+                if (position === 19 && this.selectedAction !== undefined) {
+                    this.selectedAction = undefined
+                    return
+                }
+                if (this.selectedAction === undefined && action.commands) {
+                    this.selectedAction = position
+                } else {
+                    fetch(
+                        `/trigger?action=${action.name}&position=${this.selectedAction}`
+                    ).then(
+                        response => response.json()
+                    ).then(data => this.jobs = data);
+                }
+            },
         },
     });
 </script>
